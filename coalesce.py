@@ -42,7 +42,6 @@ We provide for returning values other than None if some other default is more
 useful for your use case (a zero-argument lambda function would often be
 useful here):
 
-    #doctest: +ELLIPSIS
     >>> def say_spam():
     ...     return "spam"
     ...
