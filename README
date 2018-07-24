@@ -1,0 +1,34 @@
+This module is intended to ease access to nested data
+structures—in any combination of key or attribue access to each
+level of a hierarchy—where many paths in the tree may be missing.
+Typically, such data is encountered in semi-structured formats
+like JSON, YAML, or some XML, that is deserialized into Python
+data structures.
+
+PEP 505 attempts to address this need with the addition of a
+number of new syntactic operators for attribute or item access
+where a special type of failure mode "coalesces" None values.
+Other libraries such as PyMaybe (https://pymaybe.readthedocs.io)
+perform a similar operation, and are more mature and robust.
+
+On the other hand, by utilizing `wrapt.ObjectProxy`, this simple
+module manages to do some pretty neat stuff that even PyMaybe does
+not.
+
+In this library, I simply want to provide simple wrapper classes that
+provide both what I think is more useful behavior and behavior that
+is semantically equivalent to PEP 505.
+
+Classes:
+
+    GreedyAccess: 
+    
+        Wrap an object so that nested attribute and item access
+        simply does not fail, but propagates a wrapped object 
+        across such nested access.
+
+    NoneCoalesce:
+
+        Wrap an object so that encountering a None (or other
+        indicated sentinel) at any level stops accessing further 
+        attributes and unboxes as a None (or other sentinel). 

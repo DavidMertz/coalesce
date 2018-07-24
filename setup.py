@@ -1,5 +1,5 @@
 from distutils.core import setup
-setup(name='coalesce',
+setup(name='coalescing',
       version='0.1',
       description='Access messy nested data structures',
       author='David Mertz',
