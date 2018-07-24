@@ -2,7 +2,7 @@
 """
 Access messy nested data structures
 
-GreedyAccess will keep marching down trees even if failure occured earlier:
+GreedyAccess will keep marching down trees even if failure occurred earlier:
 
     >>> from coalesce import GreedyAccess, make_test
     >>> cfg = make_test()
@@ -37,7 +37,6 @@ or keys of None will still fail:
     >>> val = None
     >>> print(NoneCoalesce(val).attr)
     None
-
 
 We provide for returning values other than None if some other default is more
 useful for your use case (a zero-argument lambda function would often be
