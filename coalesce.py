@@ -19,23 +19,23 @@ GreedyAccess will keep marching down trees even if failure occurred earlier:
     >>> GreedyAccess(cfg).user.profile.food.unbox('spam') + ' and spam'
     'spam and spam'
 
-NoneCoalesce only descends until a None is encountered.  Accessing attributes
+NullCoalesce only descends until a None is encountered.  Accessing attributes
 or keys of None will still fail:
 
-    >>> from coalesce import NoneCoalesce
-    >>> NoneCoalesce(cfg).user.profile.song
-    <NoneCoalesce proxy for 'Nightclubbing'>
-    >>> NoneCoalesce(cfg).user.profile.song.unbox()
+    >>> from coalesce import NullCoalesce
+    >>> NullCoalesce(cfg).user.profile.song
+    <NullCoalesce proxy for 'Nightclubbing'>
+    >>> NullCoalesce(cfg).user.profile.song.unbox()
     'Nightclubbing'
-    >>> NoneCoalesce(cfg).user.profile.food
+    >>> NullCoalesce(cfg).user.profile.food
     Traceback (most recent call last):
         ...
     AttributeError: 'types.SimpleNamespace' object has no attribute 'food'
-    >>> NoneCoalesce(cfg).user.profile
-    <NoneCoalesce proxy for namespace(arms=2, song='Nightclubbing')>
+    >>> NullCoalesce(cfg).user.profile
+    <NullCoalesce proxy for namespace(arms=2, song='Nightclubbing')>
 
     >>> val = None
-    >>> print(NoneCoalesce(val).attr)
+    >>> print(NullCoalesce(val).attr)
     None
 
 We provide for returning values other than None if some other default is more
@@ -47,12 +47,14 @@ useful here):
     ...
     >>> GreedyAccess(cfg).user.profile.food.unbox(say_spam)
     'spam'
-    >>> GreedyAccess(cfg).user.profile.food.unbox(say_spam, lazy=False) #doctest: +ELLIPSIS
+    >>> GA = GreedyAccess
+    >>> GA(cfg).user.profile.food.unbox(say_spam, lazy=False) #doctest: +ELLIPSIS
     <function say_spam ...>
 
 """
 
 import wrapt
+from math import isnan
 
 
 class GreedyAccess(wrapt.ObjectProxy):
@@ -84,22 +86,41 @@ class GreedyAccess(wrapt.ObjectProxy):
             return self.__wrapped__
 
 
-class NoneCoalesce(wrapt.ObjectProxy):
+class NullCoalesce(wrapt.ObjectProxy):
     "Nested access masking lookup failures on None only"
+    _sentinel = None
+
+    def __init__(self, obj, sentinel=None):
+        super(NullCoalesce, self).__init__(obj)
+        try:
+            self._sentinel = sentinel
+        except:
+            pass
+
     def __getattr__(self, attr):
-        if self.__wrapped__ is None:
-            return None
-        else:
-            return NoneCoalesce(getattr(self.__wrapped__, attr))
+        if self.__wrapped__ == self._sentinel:
+            return self._sentinel
+        try:
+            if isnan(self._sentinel) and isnan(self.__wrapped__):
+                return self._sentinel
+        except TypeError:  # Likely not numeric
+            pass
+        return NullCoalesce(getattr(self.__wrapped__, attr),
+                            sentinel=self._sentinel)
 
     def __getitem__(self, key):
-        if self.__wrapped__ is None:
-            return None
-        else:
-            return NoneCoalesce(self.__wrapped__[key])
+        if self.__wrapped__ == self._sentinel:
+            return self._sentinel
+        try:
+            if isnan(self._sentinel) and isnan(self.__wrapped__):
+                return self._sentinel
+        except TypeError:  # Likely not numeric
+            pass
+        return NullCoalesce(self.__wrapped__[key],
+                            sentinel=self._sentinel)
 
     def __str__(self):
-        return "<NoneCoalesce proxy for %r>" % (self.__wrapped__)
+        return "<NullCoalesce proxy for %r>" % (self.__wrapped__)
 
     __repr__ = __str__
 
@@ -111,6 +132,16 @@ class NoneCoalesce(wrapt.ObjectProxy):
                 return default
         else:
             return self.__wrapped__
+
+
+NoneCoalesce = NullCoalesce
+
+
+def unbox(obj):
+    if hasattr(obj, '__wrapped__'):
+        return obj.__wrapped__
+    else:
+        return obj
 
 
 def make_test():
@@ -126,4 +157,3 @@ def make_test():
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
-

@@ -27,8 +27,10 @@ Classes:
         simply does not fail, but propagates a wrapped object 
         across such nested access.
 
-    NoneCoalesce:
+    NullCoalesce:
 
         Wrap an object so that encountering a None (or other
         indicated sentinel) at any level stops accessing further 
-        attributes and unboxes as a None (or other sentinel). 
+        attributes and unboxes as a None (or other sentinel).
+
+        Aliased as `NoneCoalesce`
