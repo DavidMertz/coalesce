@@ -64,13 +64,13 @@ class GreedyAccess(wrapt.ObjectProxy):
         try:
             return GreedyAccess(getattr(self.__wrapped__, attr))
         except AttributeError:
-            return GreedyAccess(None)
+            return Null
 
     def __getitem__(self, key):
         try:
             return GreedyAccess(self.__wrapped__[key])
         except KeyError:
-            return GreedyAccess(None)
+            return Null
 
     def __str__(self):
         return "<GreedyAccess proxy for %r>" % (self.__wrapped__)
@@ -136,6 +136,9 @@ class NullCoalesce(wrapt.ObjectProxy):
 
 
 NoneCoalesce = NullCoalesce
+
+Null = GreedyAccess(None)
+NullType = type(Null)
 
 
 def unbox(obj):
